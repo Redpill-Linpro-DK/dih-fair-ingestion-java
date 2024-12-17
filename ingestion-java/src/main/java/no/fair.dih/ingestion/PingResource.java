@@ -11,6 +11,6 @@ public class PingResource {
   @GET
   @Produces(MediaType.TEXT_PLAIN)
   public String ping() {
-    return "pong";
+    return "Pong";
   }
 }
