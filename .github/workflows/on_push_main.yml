@@ -1,0 +1,73 @@
+name: "Build and Deploy"
+on:
+  push:
+    paths:
+      - "**.java"
+    branches:
+      - main
+
+jobs:
+  deploy_infrastructure:
+    name: Deploy Supporting Infrastructure
+    runs-on: ubuntu-latest
+    env:
+      componentName: i
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout common repository
+        uses: actions/checkout@v4
+        with:
+          repository: Redpill-Linpro-DK/dih-fair-common
+          token: ${{ secrets.DIH_FAIR_COMMON_REPO_PAT }}
+          path: common-repo
+
+      - name: Load env
+        uses: ./common-repo/.github/actions/loadEnvVariables
+        with:
+          rootDir: common-repo
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
+
+      - name: Ensure the resource group exists
+        run: |
+          echo ">>> Creating group resource in $resourceLocation with name: dih.function.app-$commonResourceGroupName"
+          az group create --name dih.function.app-$commonResourceGroupName --location $resourceLocation
+
+      - name: Deploy function app
+        run: |
+          az deployment group create \
+          --resource-group dih.function.app-$commonResourceGroupName \
+          --template-file ./iac/main.bicep \
+          --parameters componentName=$componentName applicationName="$applicationName" env=$environment uniqueDeployId=$uniqueDeployId aadAppClientId=$aadAppClientId postfixCount=${postfixCount} tags="{\"environment\": \"dev\"}" \
+          location=$resourceLocation \
+          developerAccessAadGroupId=$developerAccessAadGroupId
+
+  deploy_function:
+    needs: deploy_infrastructure
+    runs-on: ubuntu-latest
+    name: "Package and Deploy function app"
+
+    steps:
+      - name: Load env
+        uses: Redpill-Linpro-DK/dih-fair-common/.github/actions/loadCommonVariables@main
+        with:
+          azureDeployRepoToken: ${{ secrets.DIH_FAIR_COMMON_REPO_PAT }}
+
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
+      - name: Run deploy
+
+        run: ./ingestion-java/mvnw -f ingestion-java/pom.xml quarkus:deploy -DfunctionAppName=dihfunctionapp-$environment-$applicationName -DresourceGroupName=dih.function.app-$commonResourceGroupName -DresourceLocation=$resourceLocation

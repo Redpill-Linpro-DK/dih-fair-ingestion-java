@@ -1,0 +1,26 @@
+name: "Testing project"
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - "**.java"
+jobs:
+  test_package:
+    runs-on: ubuntu-latest
+    name: "Test project"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load env
+        uses: Redpill-Linpro-DK/dih-fair-common/.github/actions/loadCommonVariables@main
+        with:
+          azureDeployRepoToken: ${{ secrets.DIH_FAIR_COMMON_REPO_PAT }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+      - name: Run tests
+        run: ./ingestion-java/mvnw -f ingestion-java/pom.xml clean test -DfunctionAppName=no.fair-local -DresourceLocation=westeurope -DresourceGroupName=no.fair.app-local -DresourceLocation=$resourceLocation
