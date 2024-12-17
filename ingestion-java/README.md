@@ -10,14 +10,14 @@ This project uses the azure-functions-http quarkus extension. <https://quarkus.i
 
 ### Usage of common objects
 
-In order for quarkus to serialize/deserialize these objects the following dependency is added:
+In order for quarkus to serialize/deserialize these objects the following dependency scan be added:
 
-`pom.xml
+```
     <dependency>
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-rest-jackson</artifactId>
     </dependency>
-`
+```
 
 ### Running the application in dev mode
 
