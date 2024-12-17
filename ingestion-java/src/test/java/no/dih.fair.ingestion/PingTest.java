@@ -14,7 +14,7 @@ class PingTest {
         .when().get("/ping")
         .then()
         .statusCode(200)
-        .body(is("pong"));
+        .body(is("Pong"));
   }
 
 }

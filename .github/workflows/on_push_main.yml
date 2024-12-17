@@ -68,6 +68,6 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
-      - name: Run deploy
 
+      - name: Run deploy
         run: ./ingestion-java/mvnw -f ingestion-java/pom.xml clean package quarkus:deploy -DfunctionAppName=$applicationName-$environment -DresourceGroupName=dih.function.app-$commonResourceGroupName -DresourceLocation=$resourceLocation
