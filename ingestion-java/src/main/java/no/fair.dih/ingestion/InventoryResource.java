@@ -11,7 +11,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-import no.fair.dih.model.Inventory;
+import dk.rdpl.dih.common.model.service.Inventory;
 
 @Path("/inventory")
 public class InventoryResource {
@@ -31,8 +31,8 @@ public class InventoryResource {
 
   @POST
   public Response postInventory(Inventory inv) {
-    map.put(inv.getSku(), inv);
-    return Response.status(Status.CREATED).location(URI.create(String.format("inventory/%s", inv.getSku()))).build();
+    map.put(inv.getId(), inv);
+    return Response.status(Status.CREATED).location(URI.create(String.format("inventory/%s", inv.getId()))).build();
   }
 
 }
