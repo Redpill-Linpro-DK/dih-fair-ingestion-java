@@ -10,7 +10,7 @@ on:
 
 jobs:
   deploy_infrastructure:
-    name: Deploy Supporting Infrastructure
+    name: Deploy Supporting Infrastructure and build/deploy code
     runs-on: ubuntu-latest
     env:
       componentName: i
