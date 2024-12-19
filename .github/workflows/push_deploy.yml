@@ -29,7 +29,13 @@ jobs:
         with:
           rootDir: common-repo
 
-      - name: Log in to Azure
+      - name: Log in to Azure (prod)
+        if: env.environment == 'prod'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_PROD }}
+      - name: Log in to Azure (dev)
+        if: env.environment == 'dev'
         uses: azure/login@v1
         with:
           creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
@@ -66,15 +72,21 @@ jobs:
           java-version: "17"
           distribution: "temurin"
 
-      - name: Log in to Azure
+      - name: Log in to Azure (prod)
+        if: env.environment == 'prod'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_PROD }}
+      - name: Log in to Azure (dev)
+        if: env.environment == 'dev'
         uses: azure/login@v1
         with:
           creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
 
       - name: Run deploy
         run: |
-          functionAppName="func-${applicationName}-${componentName}-${environment}-${uniqueDeployId}-${postfixCount}"
-          resourceGroupName="rg-${applicationName}-${componentName}-${environment}-${postfixCount}"
+          functionAppName="func-${applicationName}-$componentName-${environment}-${uniqueDeployId}-${postfixCount}"
+          resourceGroupName="rg-${applicationName}-$componentName-${environment}-${postfixCount}"
           echo "Deploying function app: $functionAppName to resource group: $resourceGroupName"
           
           ./ingestion-java/mvnw -f ingestion-java/pom.xml clean package quarkus:deploy \
