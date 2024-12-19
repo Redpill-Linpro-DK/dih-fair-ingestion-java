@@ -10,7 +10,7 @@ on:
 
 jobs:
   deploy_infrastructure:
-    name: Deploy Supporting Infrastructure
+    name: Deploy Supporting Infrastructure and build/deploy code
     runs-on: ubuntu-latest
     env:
       componentName: i
@@ -65,17 +65,6 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"
-
-      - name: Log in to Azure (prod)
-        if: env.environment == 'prod'
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_PROD }}
-      - name: Log in to Azure (dev)
-        if: env.environment == 'dev'
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
 
       - name: Run deploy
         run: |
