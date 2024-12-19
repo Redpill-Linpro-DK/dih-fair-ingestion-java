@@ -34,15 +34,13 @@ jobs:
         with:
           creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
 
-      - name: Ensure the resource group exists
+      - name: Deploy resource group and function app
         run: |
           resourceGroupName="rg-$applicationName-$componentName-$environment-$postfixCount"
           echo "Creating resource group: $resourceGroupName"
 
           az group create --name $resourceGroupName --location $resourceLocation
 
-      - name: Deploy function app
-        run: |
           az deployment group create \
           --resource-group $resourceGroupName \
           --template-file ./iac/main.bicep \
