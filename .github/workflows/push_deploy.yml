@@ -54,12 +54,6 @@ jobs:
           location=$resourceLocation \
           developerAccessAadGroupId=$developerAccessAadGroupId
 
-  deploy_function:
-    needs: deploy_infrastructure
-    runs-on: ubuntu-latest
-    name: "Package and Deploy function app"
-
-    steps:
       - name: Load env
         uses: Redpill-Linpro-DK/dih-fair-common/.github/actions/loadCommonVariables@main
         with:
