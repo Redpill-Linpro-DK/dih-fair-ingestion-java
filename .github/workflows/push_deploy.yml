@@ -72,4 +72,4 @@ jobs:
           creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
 
       - name: Run deploy
-        run: ./ingestion-java/mvnw -f ingestion-java/pom.xml clean package quarkus:deploy -DfunctionAppName=func-${applicationName}-${componentName}-${environment}-${uniqueDeployId}-${postfixCount} -DresourceGroupName=rg-$applicationName-$componentName-$environment-$postfixCount -DresourceLocation=$resourceLocation
+        run: ./ingestion-java/mvnw -f ingestion-java/pom.xml clean package quarkus:deploy -DfunctionAppName=func-${applicationName}-$componentName-${environment}-${uniqueDeployId}-${postfixCount} -DresourceGroupName=rg-$applicationName-$componentName-$environment-$postfixCount -DresourceLocation=$resourceLocation
