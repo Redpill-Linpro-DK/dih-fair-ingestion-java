@@ -34,6 +34,7 @@ The `.env` file is `gitignored`.
 ```
 resourceGroupName="test"
 resourceLocation="test"
+functionAppName="func"
 ```
 
 You can run your application in dev mode that enables live coding using:

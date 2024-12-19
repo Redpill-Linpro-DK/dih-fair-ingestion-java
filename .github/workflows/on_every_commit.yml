@@ -22,5 +22,11 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"
+      - name: maven-settings
+        uses: s4u/maven-settings-action@v3.1.0
+        with:
+          servers: '[{"id": "github", "username": "dev", "password": "${{ secrets.DIH_FAIR_PACKAGES_PAT }}"}]'
+          repositories: '[{"id":"github","name":"Github common", "url": "https://maven.pkg.github.com/Redpill-Linpro-DK/dih-fair-common","snapshots":{"enabled":false}}]'
+          githubServer: false
       - name: Run tests
         run: ./ingestion-java/mvnw -f ingestion-java/pom.xml clean test -DfunctionAppName=no.fair-local -DresourceLocation=westeurope -DresourceGroupName=no.fair.app-local -DresourceLocation=$resourceLocation
