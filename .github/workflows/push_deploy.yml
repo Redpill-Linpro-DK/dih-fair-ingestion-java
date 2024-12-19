@@ -1,10 +1,12 @@
 name: "Build and Deploy"
+
 on:
   push:
-    paths:
-      - "**.java"
     branches:
       - main
+      - develop
+      - hotfix/*
+      - "**" # Catch-all for other branches
 
 jobs:
   deploy_infrastructure:
@@ -27,31 +29,31 @@ jobs:
         with:
           rootDir: common-repo
 
-      - name: Log in to Azure
+      - name: Log in to Azure (prod)
+        if: env.environment == 'prod'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_PROD }}
+      - name: Log in to Azure (dev)
+        if: env.environment == 'dev'
         uses: azure/login@v1
         with:
           creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
 
-      - name: Ensure the resource group exists
+      - name: Deploy resource group and function app
         run: |
-          echo ">>> Creating group resource in $resourceLocation with name: dih.function.app-$commonResourceGroupName"
-          az group create --name dih.function.app-$commonResourceGroupName --location $resourceLocation
+          resourceGroupName="rg-$applicationName-$componentName-$environment-$postfixCount"
+          echo "Creating resource group: $resourceGroupName"
 
-      - name: Deploy function app
-        run: |
+          az group create --name $resourceGroupName --location $resourceLocation
+
           az deployment group create \
-          --resource-group dih.function.app-$commonResourceGroupName \
+          --resource-group $resourceGroupName \
           --template-file ./iac/main.bicep \
           --parameters componentName=$componentName applicationName="$applicationName" env=$environment uniqueDeployId=$uniqueDeployId aadAppClientId=$aadAppClientId postfixCount=${postfixCount} tags="{\"environment\": \"dev\"}" \
           location=$resourceLocation \
           developerAccessAadGroupId=$developerAccessAadGroupId
 
-  deploy_function:
-    needs: deploy_infrastructure
-    runs-on: ubuntu-latest
-    name: "Package and Deploy function app"
-
-    steps:
       - name: Load env
         uses: Redpill-Linpro-DK/dih-fair-common/.github/actions/loadCommonVariables@main
         with:
@@ -64,10 +66,24 @@ jobs:
           java-version: "17"
           distribution: "temurin"
 
-      - name: Log in to Azure
+      - name: Log in to Azure (prod)
+        if: env.environment == 'prod'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_PROD }}
+      - name: Log in to Azure (dev)
+        if: env.environment == 'dev'
         uses: azure/login@v1
         with:
           creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
 
       - name: Run deploy
-        run: ./ingestion-java/mvnw -f ingestion-java/pom.xml clean package quarkus:deploy -DfunctionAppName=$applicationName-$environment -DresourceGroupName=dih.function.app-$commonResourceGroupName -DresourceLocation=$resourceLocation
+        run: |
+          functionAppName="func-${applicationName}-$componentName-${environment}-${uniqueDeployId}-${postfixCount}"
+          resourceGroupName="rg-${applicationName}-$componentName-${environment}-${postfixCount}"
+          echo "Deploying function app: $functionAppName to resource group: $resourceGroupName"
+          
+          ./ingestion-java/mvnw -f ingestion-java/pom.xml clean package quarkus:deploy \
+            -DfunctionAppName=$functionAppName \
+            -DresourceGroupName=$resourceGroupName \
+            -DresourceLocation=$resourceLocation
