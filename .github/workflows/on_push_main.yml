@@ -34,13 +34,15 @@ jobs:
 
       - name: Ensure the resource group exists
         run: |
-          echo ">>> Creating group resource in $resourceLocation with name: dih.function.app-$commonResourceGroupName"
-          az group create --name dih.function.app-$commonResourceGroupName --location $resourceLocation
+          resourceGroupName="rg-$applicationName-$componentName-$environment-$postfixCount"
+          echo "Creating resource group: $resourceGroupName"
+
+          az group create --name $resourceGroupName --location $resourceLocation
 
       - name: Deploy function app
         run: |
           az deployment group create \
-          --resource-group dih.function.app-$commonResourceGroupName \
+          --resource-group $resourceGroupName \
           --template-file ./iac/main.bicep \
           --parameters componentName=$componentName applicationName="$applicationName" env=$environment uniqueDeployId=$uniqueDeployId aadAppClientId=$aadAppClientId postfixCount=${postfixCount} tags="{\"environment\": \"dev\"}" \
           location=$resourceLocation \
